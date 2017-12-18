@@ -1,0 +1,52 @@
+#!/bin/bash
+
+: << =cut
+
+=cut
+
+check_autoconf() {
+        echo "yes"
+}
+
+print_config() {
+  echo 'multigraph iota_neighbors'
+  echo 'graph_title Transaction summary'
+  echo 'graph_vlabel Transactions'
+  echo 'graph_category Iota'
+  echo 'newTransactions.label New'
+  echo 'newTransactions.type DERIVE'
+  echo 'newTransactions.min 0'
+  echo 'invalidTransactions.label Invalid'
+  echo 'invalidTransactions.type DERIVE'
+  echo 'invalidTransactions.min 0'
+  echo 'randomTransactions.label Random'
+  echo 'randomTransactions.type DERIVE'
+  echo 'randomTransactions.min 0'
+  echo 'sentTransactions.label Sent'
+  echo 'sentTransactions.type DERIVE'
+  echo 'sentTransactions.min 0'
+  echo 'allTransactions.label Total'
+  echo 'allTransactions.type DERIVE'
+  echo 'allTransactions.min 0'
+
+  curl http://localhost:14265   -X POST   -H 'Content-Type: application/json'   -H 'X-IOTA-API-Version: 1'   -d '{"command": "getNeighbors"}' -s | jq --raw-output 'foreach .neighbors[] as $item ("";"multigraph iota_neighbors#"+$item.address,"graph_title Node "+$item.address,"graph_vlabel Transactions","graph_category Iota","newTransactions#label New","newTransactions#type DERIVE","newTransactions#min 0","invalidTransactions#label Invalid","invalidTransactions#type DERIVE","invalidTransactions#min 0","randomTransactions#label Random","randomTransactions#type DERIVE","randomTransactions#min 0","sentTransactions#label Sent","sentTransactions#type DERIVE","sentTransactions#min 0","allTransactions#label Total","allTransactions#type DERIVE","allTransactions#min 0")' | sed s/[.:/]/_/g | sed s/[#]/./g
+
+  exit 0
+}
+
+print_data() {
+        curl http://localhost:14265   -X POST   -H 'Content-Type: application/json'   -H 'X-IOTA-API-Version: 1'   -d '{"command": "getNeighbors"}' -s | jq --raw-output '"multigraph iota_neighbors", "newTransactions#value "+([.neighbors[].numberOfNewTransactions] | add | tostring),"invalidTransactions#value "+([.neighbors[].numberOfInvalidTransactions] | add | tostring),"randomTransactions#value "+([.neighbors[].numberOfRandomTransactionRequests] | add | tostring),"sentTransactions#value "+([.neighbors[].numberOfSentTransactions] | add | tostring),"allTransactions#value "+([.neighbors[].numberOfAllTransactions] | add | tostring),foreach .neighbors[] as $item ("";"multigraph iota_neighbors#"+$item.address,"newTransactions#value "+($item.numberOfNewTransactions|tostring),"invalidTransactions#value "+($item.numberOfInvalidTransactions|tostring),"randomTransactions#value "+($item.numberOfRandomTransactionRequests|tostring),"sentTransactions#value "+($item.numberOfSentTransactions|tostring),"allTransactions#value "+($item.numberOfAllTransactions|tostring))' | sed s/[.:/]/_/g | sed s/[#]/./g
+}
+
+# Parse arguments, run correct function
+case $1 in
+    "autoconf")
+        check_autoconf
+        ;;
+    "config")
+        print_config
+        ;;
+    *)
+        print_data
+        ;;
+esac
