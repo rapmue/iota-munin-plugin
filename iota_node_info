@@ -26,19 +26,18 @@ print_config() {
   echo 'jreTotalMemory.type GAUGE'
   echo 'jreTotalMemory.min 0'
 
-  echo 'multigraph iota_neighbors'
+  echo 'multigraph iota_neighbor_count'
   echo 'graph_title Iota node neighbors'
   echo 'graph_args --base 1000 -l 0'
   echo 'graph_vlabel Neighbors'
   echo 'graph_category Iota'
 
-  echo 'neighbors.label neighbors'
-  echo 'neighbors.type GAUGE'
-  echo 'neighbors.min 0'
+  echo 'neighborCount.label neighbors'
+  echo 'neighborCount.type GAUGE'
+  echo 'neighborCount.min 0'
 
   echo 'multigraph iota_milestone'
   echo 'graph_title Iota milestones'
-  #echo 'graph_args --base 1000'
   echo 'graph_vlabel Milestone'
   echo 'graph_category Iota'
 
@@ -64,7 +63,7 @@ print_config() {
 }
 
 print_data() {
-        curl http://localhost:14265   -X POST   -H 'Content-Type: application/json'   -H 'X-IOTA-API-Version: 1'   -d '{"command": "getNodeInfo"}' -s | jq --raw-output '"multigraph iota_jre","jreFreeMemory.value " + (.jreFreeMemory | tostring),"jreMaxMemory.value " + (.jreMaxMemory | tostring),"jreTotalMemory.value "+(.jreTotalMemory | tostring),"multigraph iota_neighbors","neighbors.value "+(.neighbors|tostring),"multigraph iota_milestone","latest.value "+(.latestMilestoneIndex|tostring),"latestSolid.value "+(.latestSolidSubtangleMilestoneIndex|tostring),"multigraph iota_tx","tips.value "+(.tips|tostring),"transactions.value "+(.transactionsToRequest|tostring)'
+        curl http://localhost:14265   -X POST   -H 'Content-Type: application/json'   -H 'X-IOTA-API-Version: 1'   -d '{"command": "getNodeInfo"}' -s | jq --raw-output '"multigraph iota_jre","jreFreeMemory.value " + (.jreFreeMemory | tostring),"jreMaxMemory.value " + (.jreMaxMemory | tostring),"jreTotalMemory.value "+(.jreTotalMemory | tostring),"multigraph iota_neighbor_count","neighborCount.value "+(.neighbors|tostring),"multigraph iota_milestone","latest.value "+(.latestMilestoneIndex|tostring),"latestSolid.value "+(.latestSolidSubtangleMilestoneIndex|tostring),"multigraph iota_tx","tips.value "+(.tips|tostring),"transactions.value "+(.transactionsToRequest|tostring)'
 }
 
 # Parse arguments, run correct function
